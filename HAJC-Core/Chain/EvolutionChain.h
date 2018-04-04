@@ -3,6 +3,9 @@
 
 #include <vector>
 
+#include <HAJC-Core/Interface/IBase.h>
+#include <HAJC-Core/IR/IR.h>
+
 namespace HAJC {
     enum class ECLevel {
         VERY_LOW                                                        = 0x0000,
@@ -16,7 +19,7 @@ namespace HAJC {
     enum class ECKind { 
         ECAlinger                                                       = 0x0001,
         ECUnknown                                                       = 0xFFFF
-    }
+    };
 
     class EvolutionChainInfo {
         friend class EvolutionChain;
@@ -24,9 +27,7 @@ namespace HAJC {
         unsigned int m_szLocked;
 
     protected:
-        std::vector<IValue*> m_evolutedIV;
-
-        unsigned int m_szIV;
+        std::vector<IBase*> m_evolutedIB;
 
         unsigned int m_szIR;
         unsigned int m_szStruct;
@@ -34,11 +35,11 @@ namespace HAJC {
         unsigned int m_szConst;
 
         unsigned int m_szIRLoad;
-        unsigned int m_szIRCasting;
-        unsigned int m_szIRMath;
-        unsigned int m_szIRRegRef;
         unsigned int m_szIRStore;
-        unsigned int m_szIRTypeDef;
+        unsigned int m_szIRCast;
+        unsigned int m_szIRMath;
+        unsigned int m_szIRRegDef;
+        unsigned int m_szIRType;
         unsigned int m_szIRValue;
     };
 
@@ -51,7 +52,7 @@ namespace HAJC {
         EvolutionChainInfo* m_ecInfo;
 
     public:
-        EovlutionChain(ECKind kind = ECKind::ECUnknown, ECLevel level = ECLevel::UNKNOWN);
+        EvolutionChain(ECKind kind = ECKind::ECUnknown, ECLevel level = ECLevel::UNKNOWN);
         virtual ~EvolutionChain() = default;
 
         const ECLevel GetLevel();
@@ -60,12 +61,8 @@ namespace HAJC {
         EvolutionChain* GetPrivNode();
         EvolutionChain* GetNextNode();
 
-        virtual bool ExecuteEvolutionChainAsIRNodeImpl(IR* node) = 0;
-        virtual bool ExecuteEvolutionChainAsIVImpl(IValue* iv) = 0;
-
-        bool ExecuteEvolutionChainAsIRNode(IR* node, bool evoluteSingleNode = false);
-        bool ExecuteEvolutionChainAsIV(IValue* iv, bool evoluteSingleIV = false);
-        
+        virtual IR* ExecuteEvolutionChainAsIRNodeImpl(IR* node) = 0;
+        bool ExecuteEvolutionChainAsIRNode(IR* node);  
     };
 }
 

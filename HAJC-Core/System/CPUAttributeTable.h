@@ -1,11 +1,22 @@
 #ifndef HAJC_CORE_SYSTEM_CPU_ATTRIBUTE_H_
 #define HAJC_CORE_SYSTEM_CPU_ATTRIBUTE_H_
 
+#include <HAJC-Core/Interface/IBase.h>
+#include <HAJC-Core/ADT/CommonTable.h>
+#include <string>
+
 namespace HAJC {
-    enum class CPUArch {
+    enum class CPUArch : short{
         ALL                                                             = 0x0000,
-        x86_64                                                          = 0x0011, 
-        x86                                                             = 0x0012
+        AMD64                                                           = 0x0011, 
+        IA32                                                            = 0x0012,
+        ARM32                                                           = 0x0021,
+        ARM64                                                           = 0x0022
+    };
+
+    enum class CPUProduct : short {
+        INTEL_IVYBRIDGE,
+        INTEL_HASWELL
     };
 
     enum class CPUFeature : short {
@@ -50,11 +61,52 @@ namespace HAJC {
         x64_86_XSS                                                      = 0x0026,
     };
 
-    class CPUAttribute {
-        CPUArch m_cpuArch;
+    enum class CPUFeatureLevel : char {
+        DISABLED, ENABLED, SPECALIZED, SUPPORTED
     };
 
+    class CPUAttributeTable : public IBase, public EnumTable<CPUFeatureLevel, CPUFeature, 0x00FF> {
+        CPUArch m_cpuArch;
+        CPUProduct m_cpuProduct;
 
+    protected:
+        explicit CPUAttributeTable(IBKind kind, const std::string& tag, CPUArch arch);
+        explicit CPUAttributeTable(IBKind kind, const std::string& tag, CPUArch arch, CPUProduct product);
+
+    public:
+        // Default constructor will be deleted
+        // this object only can be created by inherit it.
+        CPUAttributeTable() = delete;
+        virtual ~CPUAttributeTable() = default;
+
+        CPUArch GetCPUArch() const;
+        CPUProduct GetCPUProduct() const;
+
+        static CPUAttributeTable* CreateAttributeForAMD64CPU(const std::string& tag);
+        static CPUAttributeTable* CreateAttributeForIA32CPU(const std::string& tag);
+        static CPUAttributeTable* CreateAttributeForARM32CPU(const std::string& tag);
+        static CPUAttributeTable* CreateAttributeForARM64CPU(const std::string& tag);
+
+        static bool classof(const IBase* ib) {
+            return IBase::IsCPUAttributeTable(ib);
+        }
+    };
+
+    class AMD64AttributeTable : public CPUAttributeTable {
+
+    };
+
+    class IA32AttributeTable : public CPUAttributeTable {
+
+    };
+
+    class ARM32AttributeTable : public CPUAttributeTable {
+
+    };
+
+    class ARM64AttributeTable : public CPUAttributeTable {
+
+    };
 }
 
 #endif

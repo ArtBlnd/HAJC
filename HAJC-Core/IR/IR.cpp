@@ -1,11 +1,22 @@
 #include <HAJC-Core/IR/IR.h>
-#include <HAJC/HAJCLog.h>
+#include <HAJC-Core/Utils/HAJCLog.h>
 
 #include <string>
 
+inline std::string CreateTagWithPrefix(const std::string& prefix, const std::string& tag) {
+    std::string newTag;
+    newTag.resize(prefix.size() + 1 + tag.size());
+
+    newTag += prefix;
+    newTag += "#";
+    newTag += tag;
+
+    return newTag;
+}
+
 namespace HAJC {
     IR::IR(IBKind type, IBase* parents, const std::string& tag) :
-            IBase(type, parents, tag) {
+            IBase(type, parents, CreateTagWithPrefix("ir", tag)) {
         if(type == IBKind::IB_UNKNOWN)
             NodifyLog("created IR type is unknwon! is it working correct?", NodifyLevel::WARNING);
         if(tag.empty())
@@ -23,8 +34,8 @@ namespace HAJC {
         return m_operands.size(); 
     }
 
-    IRType::IRType(IBase* parents, const std::string& tag) :
-            IR(IBKind::IB_IR_TYPE, parents, tag) { }
+    IRType::IRType(IBase* parents) :
+            IR(IBKind::IB_IR_TYPE, parents, "type") { }
 
     unsigned int IRType::GetTypeSize() const {
         return m_typeSize;
@@ -37,8 +48,8 @@ namespace HAJC {
         return oldSize;
     }
 
-    IRScalarType::IRScalarType(IBase* parents, const std::string& tag) :
-            IR(IBKind::IB_IR_SCALAR_TYPE, parents, tag) { }
+    IRScalarType::IRScalarType(IBase* parents) :
+            IR(IBKind::IB_IR_SCALAR_TYPE, parents, "scalar_type") { }
 
     unsigned int IRScalarType::GetTypeSize() const {
         return m_typeSize;
@@ -61,4 +72,6 @@ namespace HAJC {
 
         return oldSize;
     }
+
+    
 }
