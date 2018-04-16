@@ -3,12 +3,24 @@
 
 #include <string>
 
+inline std::string CreateTagWithPrefix(const std::string& prefix, const std::string& tag) {
+    std::string newTag;
+    newTag.resize(prefix.size() + 1 + tag.size());
+
+    newTag += prefix;
+    newTag += "#";
+    newTag += tag;
+
+    return newTag;
+}
+
 namespace HAJC {
     enum IBKind {
         IB_IR_TYPE                                                              = 0x0110,
         IB_IR_SCALAR_TYPE                                                       = 0x0111,
         IB_IR_VALUE                                                             = 0x0121,
         IB_IR_MATH                                                              = 0x0122,
+        IB_IR_ARRAY                                                             = 0x0123,
         IB_IR_MODULE                                                            = 0x01FF,
 
         IB_CPU_ATTRIBUTE_TABLE_AMD64                                            = 0x0201,
@@ -27,7 +39,7 @@ namespace HAJC {
         const IBKind m_kind;
     public:
         explicit IBase(IBKind kind, IBase* parents, const std::string& tag) 
-                : m_kind(kind), m_parents(parents), m_tag(tag) { }
+                : m_kind(kind), m_parents(parents), m_tag(CreateTagWithPrefix("ibase", tag)) { }
 
         IBKind GetKindOf() const { 
             return m_kind; 
@@ -70,7 +82,6 @@ namespace HAJC {
             return !!(ib->GetKindOf() & 0x0200);
         }
     };
-
 }
 
 #endif

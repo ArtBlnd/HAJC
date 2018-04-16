@@ -1,0 +1,17 @@
+HAJC는 Hardware Accelerated JIT(Just in time) Compiler의 약자입니다.
+이것은 크게 4가지 기능을 제공할 예정입니다.
+
+1. HAJC IR 언어를 제공합니다.
+2. 다른 언어로부터 HAJC IR로 컴파일이 가능하도록 만듭니다. 이것은 LLVM과 동일합니다.
+3. PCI-E를 사용하는 하드웨어 인터프리터를 사용하여 기계어로 변환합니다.
+4. 기존의 평준화된 Assembly를 자신의 CPU에 특화된 Assembly로 변환합니다.
+
+이 매커니즘은 기본적인 Software JIT Compiler와 동일합니다. (.NET / JVM / V8)
+HAJC는 이 컴파일링 메서드를 컴파일링에 특화된 하드웨어를 통해 빠르고 효율적으로 컴파일합니다.
+이것은 대부분의 CPU또는 OS에 대한 벽을 허물게 될 것입니다.
+
+이것은 기본적으로 예상되는 3가지 결과입니다.
+
+1. JIT Compile의 속도 향상 및 적은 리소스 사용.
+2. IR Language에 대한 강한 보안 및 코드 Modifiy 방지.
+3. CPU friendly한 Assembly를 CPU에 따라 재작성함으로서 CPU의 모든 기능을 사용하도록 함.

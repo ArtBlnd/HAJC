@@ -2,17 +2,7 @@
 #include <HAJC-Core/Utils/HAJCLog.h>
 
 #include <string>
-
-inline std::string CreateTagWithPrefix(const std::string& prefix, const std::string& tag) {
-    std::string newTag;
-    newTag.resize(prefix.size() + 1 + tag.size());
-
-    newTag += prefix;
-    newTag += "#";
-    newTag += tag;
-
-    return newTag;
-}
+#include <cmath>
 
 namespace HAJC {
     IR::IR(IBKind type, IBase* parents, const std::string& tag) :
@@ -32,6 +22,18 @@ namespace HAJC {
 
     unsigned int IR::GetNumOperand() const {
         return m_operands.size(); 
+    }
+
+    IRNormalizeLevel IR::SetNormalizeLevel(IRNormalizeLevel level) {
+        if(std::abs((int)(level) - (int)(m_level)) > 1)
+            NodifyLog("modifying normalize level by 2 step is dangerous! are you sure is it normalized as right way?", NodifyLevel::WARNING);
+        IRNormalizeLevel oldLevel = m_level;
+        m_level = level;
+        return oldLevel;
+    }
+
+    IRNormalizeLevel IR::GetNormalizeLevel() const {
+        return m_level;
     }
 
     IRType::IRType(IBase* parents) :
@@ -73,5 +75,48 @@ namespace HAJC {
         return oldSize;
     }
 
-    
+    IRValue::IRValue(IBase* parents, IRType* type) :
+            IR(IBKind::IB_IR_VALUE, parents, "value") {
+        m_operands.push_back(type);
+    }
+
+    IRValue::IRValue(IBase* parents, IRType* type, IBase* initV) :
+            IR(IBKind::IB_IR_VALUE, parents, "value") {
+        m_operands.push_back(type);
+        m_operands.push_back(initV);
+    }
+
+    IRType* IRValue::SetValueType(IRType* type) {
+        IBase* oldType = m_operands[0];
+        m_operands[0] = type;
+        return (IRType*)oldType;
+    }
+
+    IRType* IRValue::GetValueType() {
+        return (IRType*)GetOperand(0);
+    }
+
+    IBase* IRValue::SetInitValue(IBase* value) {
+        IBase* oldV = m_operands[1];
+        m_operands[1] = value;
+        return (IRType*)oldV;
+    }
+
+    IBase* IRValue::GetInitValue() {
+        return GetOperand(1);
+    }
+
+    IRArray::IRArray(IBase* parents, IRType* type, unsigned int size) :
+            IR(IBKind::IB_IR_ARRAY, parents, "array") {
+        m_isTypedArray = true;
+    }
+
+    IRArray::IRArray(IBase* parents, std::vector<IBase*> arrays) :
+            IR(IBKind::IB_IR_ARRAY, parents, "array") {
+        m_isTypedArray = false;
+    }
+
+    bool IRArray::GetIsTypedArray() const {
+        return m_isTypedArray;
+    }
 }

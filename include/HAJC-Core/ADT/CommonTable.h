@@ -35,6 +35,21 @@ namespace HAJC {
         }
     };
 
+    template <class Ty>
+    class IRTypeTable : public EnumTable<typename Ty, IBKind, 0xFF>
+    {
+        typedef EnumTable<typename Ty, IBKind, 0xFF> OriginalEnumTableTy;
+
+    public:
+        Ty& LookUp(EnumTy index) {
+            if(((size_t)(index) & 0x0100) == 0x0100)
+                OriginalEnumTableTy::LookUp((EnumTy)((size_t)(index) - 0x0100));
+        }
+        Ty& operator[](EnumTy index) {
+            return LookUp(index);
+        }
+    };
+
     template <class Ty, size_t BaseSize>
     class DynamicTable {
     };
