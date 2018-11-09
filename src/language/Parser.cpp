@@ -15,7 +15,7 @@ namespace HAJC
             return false;
         }
 
-        context->sourceLength = file.tellg();
+        context->sourceLength = (size_t)file.tellg();
         context->sourceBuffer = new char[context->sourceLength];
         context->filename     = filename;
         context->mpiLarge     = new MemPoolInternal();
@@ -24,6 +24,30 @@ namespace HAJC
         file.seekg(std::ios::beg);
         file.read(context->sourceBuffer, context->sourceLength);
         return true;
+    }
+
+    inline void RecStringAndClean(AStringHolder &token, ParseContext* context)
+    {
+        if(!token.empty())
+        {
+            TokenContext::CreateTokenString(context, token);
+            token.clear();
+        }
+    }
+
+    bool IsAlphabet(const char c)
+    {
+        if(c >= 'a' && c <= 'z')
+        {
+            return true;
+        }
+
+        if(c >= 'A' && c <= 'Z')
+        {
+            return true;
+        }
+
+        return false;
     }
 
     void psTokenlizeContext(ParseContext* context)
@@ -35,7 +59,7 @@ namespace HAJC
         {
             char c = context->sourceBuffer[index];
 
-            if(c == '\0')
+            if (c == '\0')
             {
                 // EOF reached.
                 break;
@@ -44,33 +68,35 @@ namespace HAJC
             switch(c)
             {
             case '$': // Define identifier.
-                if(!recordedToken.empty())
-                {
-                    TokenContext::CreateTokenString(context, recordedToken);
-                    recordedToken.clear();
-                }
-
+                RecStringAndClean(recordedToken, context);
                 TokenContext::CreateTokenDefine(context);
                 break;
 
             case '=': // Assign identifier.
-                if(!recordedToken.empty())
-                {
-                    TokenContext::CreateTokenString(context, recordedToken);
-                    recordedToken.clear();
-                }
-
+                RecStringAndClean(recordedToken, context);
                 TokenContext::CreateTokenAssign(context);
                 break;
 
+            case '[': case ']':
+            case '(': case ')':
+            case '{': case '}':
+                RecStringAndClean(recordedToken, context);
+                TokenContext::CreateTokenBracket(context, AString<1>(&c));
+                break;
+
             case ' ': // White space identifier.
-                TokenContext::CreateTokenString(context, recordedToken);
-                recordedToken.clear();
+                RecStringAndClean(recordedToken, context);
                 break;
 
             default:
-
-                break;
+                if (IsAlphabet(c))
+                {
+                    recordedToken += c;
+                    break;
+                }
+                    
+                RecStringAndClean(recordedToken, context);
+                TokenContext::CreateTokenUnknown(context, AString<1>(&c));
             }
         }
     }
@@ -89,7 +115,7 @@ namespace HAJC
         context->filename.clear();
     }
 
-    AString<1>  globAssignToken = "=";
+    AString<1>   globAssignToken = "=";
     TokenContext globAssignTokenContext(globAssignToken);
     TokenContext* TokenContext::CreateTokenAssign(ParseContext* context)
     {
@@ -97,7 +123,7 @@ namespace HAJC
         return &globAssignTokenContext; // Statically defined.
     }
 
-    AString<1>  globDefineToken = "$";
+    AString<1>   globDefineToken = "$";
     TokenContext globDefineTokenContext(globDefineToken);
     TokenContext* TokenContext::CreateTokenDefine(ParseContext* context)
     {
@@ -107,14 +133,28 @@ namespace HAJC
 
     TokenContext* TokenContext::CreateTokenSpecal(ParseContext* context, const AStringHolder& token)
     {
-        TokenContext* tokenContext = (TokenSpecal*) new(context->mpiSmall) TokenSpecal(token);
+        TokenContext* tokenContext = new(context->mpiSmall) TokenSpecal(token);
         context->sourceTokens.push_back(tokenContext);
         return tokenContext;
     }
 
     TokenContext* TokenContext::CreateTokenString(ParseContext* context, const AStringHolder& token)
     {
-        TokenContext* tokenContext = (TokenString*) new(context->mpiLarge) TokenString(token);
+        TokenContext* tokenContext = new(context->mpiLarge) TokenString(token);
+        context->sourceTokens.push_back(tokenContext);
+        return tokenContext;
+    }
+
+    TokenContext* TokenContext::CreateTokenBracket(ParseContext * context, const AStringHolder& token)
+    {
+        TokenContext* tokenContext = new(context->mpiSmall) TokenBracket(token);
+        context->sourceTokens.push_back(tokenContext);
+        return tokenContext;
+    }
+
+    TokenContext* TokenContext::CreateTokenUnknown(ParseContext * context, const AStringHolder& token)
+    {
+        TokenContext* tokenContext = new(context->mpiSmall) TokenBracket(token);
         context->sourceTokens.push_back(tokenContext);
         return tokenContext;
     }

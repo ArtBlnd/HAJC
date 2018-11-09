@@ -44,7 +44,7 @@ bool MainExec(std::string filename)
 
 int main(int args, char** argv, char** env)
 {
-    CONTRACT_CALL_TRACE; /* PAL DEBUG CONTRACT */
+    CONTRACT_CALL_TRACE;
     
     if(!InitExec(args, argv))
     {

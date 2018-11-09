@@ -41,31 +41,27 @@ namespace HAJC
         static TokenContext* CreateTokenDefine(ParseContext* context);
         static TokenContext* CreateTokenSpecal(ParseContext* context, const AStringHolder& token);
         static TokenContext* CreateTokenString(ParseContext* context, const AStringHolder& token);
+        static TokenContext* CreateTokenBracket(ParseContext* context, const AStringHolder& token);
+        static TokenContext* CreateTokenUnknown(ParseContext* context, const AStringHolder& token);
     };
 
-    struct TokenString : public TokenContext
-    {
-        // reserve 64 bytes.
-        AString<1 << 6> tsString; 
-        virtual ~TokenString() = default;
-    
-        explicit TokenString(const AStringHolder& token) : TokenContext(tsString) 
-        {
-            tsString = token;
-        }
-    };
+#define DEFINE_TOKEN(name, reserves)                                                    \
+    struct Token##name## : public TokenContext                                          \
+    {                                                                                   \
+        AString <1 << reserves> tsString;                                               \
+        virtual ~Token##name##() = default;                                             \
+                                                                                        \
+        explicit Token##name##(const AStringHolder& token) : TokenContext(tsString)     \
+        {                                                                               \
+            tsString = token;                                                           \
+        }                                                                               \
+    }
 
-    struct TokenSpecal : public TokenContext
-    {
-        // reserve 4 bytes.
-        AString<1 << 2> tsString; 
-        virtual ~TokenSpecal() = default;
-
-        explicit TokenSpecal(const AStringHolder& token) : TokenContext(tsString) 
-        {
-            tsString = token;
-        }
-    };
+    DEFINE_TOKEN(Unknown, 0x01);
+    DEFINE_TOKEN(String , 0x08);
+    DEFINE_TOKEN(Specal , 0x01);
+    DEFINE_TOKEN(Bracket, 0x01);
+#undef DEFINE_TOKEN
 
     bool psCreateContext(ParseContext* context, const std::string& filename);
     void psTokenlizeContext(ParseContext* context);
