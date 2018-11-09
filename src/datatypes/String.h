@@ -68,7 +68,7 @@ namespace HAJC
 
         void resize(size_t newSize)
         {
-            StrTy* newBuffer = new(originalPool) StrTy[newSize];
+            StrTy* newBuffer = new(mpBase) StrTy[newSize];
 
             if(!empty())
             {
@@ -76,7 +76,7 @@ namespace HAJC
             }
 
             std::swap(shBuffer, newBuffer);
-            delete[] newBufer;
+            delete[] newBuffer;
         }
 
         // default copy initilaizer.
@@ -146,6 +146,7 @@ namespace HAJC
             }
 
             shBuffer[shBufferLength++] = c;
+            return *this;
         }
     };
 
