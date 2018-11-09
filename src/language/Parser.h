@@ -49,7 +49,6 @@ namespace HAJC
         AString<1 << 6> tsString; 
         virtual ~TokenString() = default;
     
-    protected:
         explicit TokenString(const AStringHolder& token) : TokenContext(tsString) 
         {
             tsString = token;
@@ -62,7 +61,6 @@ namespace HAJC
         AString<1 << 2> tsString; 
         virtual ~TokenSpecal() = default;
 
-    protected:
         explicit TokenSpecal(const AStringHolder& token) : TokenContext(tsString) 
         {
             tsString = token;

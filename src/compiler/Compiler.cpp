@@ -21,8 +21,8 @@ namespace HAJC
     }
 
     // This will initialize instruction memory pools recursively by template arguments.
-    template <unsigned int opIndex>
-    inline void InitInstrPool(IMemPool* (&pool)[opIndex])
+    template <unsigned int opIndex = MAX_INSTR_POOL_COUNT>
+    inline void InitInstrPool(IMemPool** pool)
     {
         if constexpr(opIndex != 0)
         {
@@ -59,12 +59,11 @@ namespace HAJC
         ReleasePools(&compPool);
     }
 
-#define DEF_INST(name, namec, num, flag, maxop)                                 \
-    Inst##name## Compiler::Create##name##Inst()                                 \
-    {                                                                           \
-        compInfo.ciCntInstr++;                                                  \
-        return compPool.GetInstrPool(maxop)->As##name##Node();                  \
+#define DEF_INST(name, namec, num, flag, maxop)                                         \
+    Inst##name##* Compiler::Create##name##Inst()                                        \
+    {                                                                                   \
+        compInfo.ciCntInstr++;                                                          \
+        return new (compPool.GetInstrPool(maxop)) Inst##name##();                       \
     }
 #include <compiler/CompInstructionDefs.h>
-    
 }

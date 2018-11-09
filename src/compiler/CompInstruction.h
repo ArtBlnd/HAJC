@@ -42,21 +42,21 @@ namespace HAJC
         template <class RetTy = InstTree*>
         RetTy GetOp(const unsigned int opIdx);
 
-#define DEF_INST(name, namec, num, flag, maxop)                         \
-        Inst##name##* As##name##Node() const                            \
-        {                                                               \
-            if(Is##name##Node())                                        \
-            {                                                           \
-                return (Inst##name##*)this;                             \
-            }                                                           \
-            return nullptr;                                             \
+#define DEF_INST(name, namec, num, flag, maxop)                                         \
+        Inst##name##* As##name##Node() const                                            \
+        {                                                                               \
+            if(Is##name##Node())                                                        \
+            {                                                                           \
+                return (Inst##name##*)this;                                             \
+            }                                                                           \
+            return nullptr;                                                             \
         }
 #include <compiler/CompInstructionDefs.h>
 
-#define DEF_INST(name, namec, num, flag, maxop)                         \
-        bool Is##name##Node() const                                     \
-        {                                                               \
-            return GetType() == (IT_TYPE)num;                           \
+#define DEF_INST(name, namec, num, flag, maxop)                                         \
+        bool Is##name##Node() const                                                     \
+        {                                                                               \
+            return GetType() == (IT_TYPE)num;                                           \
         }
 #include <compiler/CompInstructionDefs.h>
 
@@ -100,14 +100,14 @@ namespace HAJC
         }
     }; // class InstTreeOp
 
-#define DEF_INST(name, namec, num, flag, maxop)                         \
-    struct Inst##name## : public InstTreeOp<maxop>                      \
-    {                                                                   \
-        explicit Inst##name##()                                         \
-        {                                                               \
-            SetFlag((IT_FLAG)flag);                                     \
-            SetType((IT_TYPE)num);                                      \
-        }                                                               \
+#define DEF_INST(name, namec, num, flag, maxop)                                         \
+    struct Inst##name## : public InstTreeOp<maxop>                                      \
+    {                                                                                   \
+        explicit Inst##name##()                                                         \
+        {                                                                               \
+            SetFlag((IT_FLAG)flag);                                                     \
+            SetType((IT_TYPE)num);                                                      \
+        }                                                                               \
     };
 #include <compiler/CompInstructionDefs.h>
 

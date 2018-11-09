@@ -33,8 +33,8 @@ namespace HAJC
         CompilerPool compPool;
         CompilerInfo compInfo;
 
-#define DEF_INST(name, namec, num, flag, maxop)                                 \
-        Inst##name## Create##name##Inst();
+#define DEF_INST(name, namec, num, flag, maxop)                                         \
+        Inst##name##* Create##name##Inst();
 #include <compiler/CompInstructionDefs.h>
 
     }; // class Compiler
