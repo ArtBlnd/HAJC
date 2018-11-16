@@ -26,7 +26,7 @@ namespace HAJC
         return true;
     }
 
-    inline void RecStringAndClean(AStringHolder &token, ParseContext* context)
+    inline void RecStringAndClean(AStringHolder& token, ParseContext* context)
     {
         if(!token.empty())
         {
@@ -35,20 +35,26 @@ namespace HAJC
         }
     }
 
+#pragma warning(push)
+#pragma warning(disable:4554)
     bool IsAlphabet(const char c)
     {
-        if(c >= 'a' && c <= 'z')
+        // These using & operand instead of && will remove dependency of compares
+        // So disable 4554 warning for it.
+
+        if(c >= 'a' & c <= 'z')
         {
             return true;
         }
 
-        if(c >= 'A' && c <= 'Z')
+        if(c >= 'A' & c <= 'Z')
         {
             return true;
         }
 
         return false;
     }
+#pragma warning(pop)
 
     void psTokenlizeContext(ParseContext* context)
     {
@@ -103,6 +109,8 @@ namespace HAJC
 
     void psDeleteContext(ParseContext* context)
     {
+        CONTRACT_CALL_TRACE;
+
         delete[] context->sourceBuffer;
 
         delete context->mpiLarge;
@@ -115,16 +123,24 @@ namespace HAJC
         context->filename.clear();
     }
 
-    AString<1>   globAssignToken = "=";
-    TokenContext globAssignTokenContext(globAssignToken);
+    void psDumpContext(ParseContext* context)
+    {
+        CONTRACT_CALL_TRACE;
+
+        for(TokenContext* token : context->sourceTokens)
+        {
+            printf("%s\n", token->tcToken.shBuffer);
+        }
+    }
+
+    TokenContext globAssignTokenContext(AString<1>("="));
     TokenContext* TokenContext::CreateTokenAssign(ParseContext* context)
     {
         context->sourceTokens.push_back(&globAssignTokenContext);
         return &globAssignTokenContext; // Statically defined.
     }
 
-    AString<1>   globDefineToken = "$";
-    TokenContext globDefineTokenContext(globDefineToken);
+    TokenContext globDefineTokenContext(AString<1>("$"));
     TokenContext* TokenContext::CreateTokenDefine(ParseContext* context)
     {
         context->sourceTokens.push_back(&globDefineTokenContext);
@@ -145,16 +161,16 @@ namespace HAJC
         return tokenContext;
     }
 
-    TokenContext* TokenContext::CreateTokenBracket(ParseContext * context, const AStringHolder& token)
+    TokenContext* TokenContext::CreateTokenBracket(ParseContext* context, const AStringHolder& token)
     {
         TokenContext* tokenContext = new(context->mpiSmall) TokenBracket(token);
         context->sourceTokens.push_back(tokenContext);
         return tokenContext;
     }
 
-    TokenContext* TokenContext::CreateTokenUnknown(ParseContext * context, const AStringHolder& token)
+    TokenContext* TokenContext::CreateTokenUnknown(ParseContext* context, const AStringHolder& token)
     {
-        TokenContext* tokenContext = new(context->mpiSmall) TokenBracket(token);
+        TokenContext* tokenContext = new(context->mpiSmall) TokenUnknown(token);
         context->sourceTokens.push_back(tokenContext);
         return tokenContext;
     }

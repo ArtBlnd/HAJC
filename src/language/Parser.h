@@ -57,15 +57,17 @@ namespace HAJC
         }                                                                               \
     }
 
-    DEFINE_TOKEN(Unknown, 0x01);
     DEFINE_TOKEN(String , 0x08);
     DEFINE_TOKEN(Specal , 0x01);
     DEFINE_TOKEN(Bracket, 0x01);
+    DEFINE_TOKEN(Unknown, 0x01);
 #undef DEFINE_TOKEN
 
     bool psCreateContext(ParseContext* context, const std::string& filename);
     void psTokenlizeContext(ParseContext* context);
     void psDeleteContext(ParseContext* context);
+
+    void psDumpContext(ParseContext* context);
 }
 
 #endif

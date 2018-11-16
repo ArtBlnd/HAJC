@@ -1,119 +1,93 @@
 #include <tools/Argument.h>
 #include <tools/Debug.h>
 
+#include <map>
+
 namespace HAJC
 {
-
-    int ArgumentVisitor::AsInt()
+    std::map <std::string, Argument*>* optionTable = nullptr;
+    std::map <std::string, Argument*>& GetOptionTable()
     {
-        noway_assert(!IsExists(), "Argument is not initialized!");
-        return std::stoi(*Value);
-    }
-
-    double ArgumentVisitor::AsDouble()
-    {
-        noway_assert(!IsExists(), "Argument is not initialized!");
-        return std::stod(*Value);
-    }
-
-    bool ArgumentVisitor::AsBool()
-    {
-        noway_assert(!IsExists(), "Argument is not initialized!");
-        if(*Value == "true"  || *Value == "1")
+        if(optionTable == nullptr)
         {
-            return true;
+            optionTable = new std::map <std::string, Argument*>();
         }
 
-        if(*Value == "false" || *Value == "0" || Value->empty())
+        return *optionTable;
+    }
+
+    Argument::Argument(char* Key, char* Desc)
+        : aiKey(Key), aiDescription(Desc)
+    {
+        GetOptionTable().insert(std::make_pair(Key, this));
+    }
+
+    bool ExtractKVFromArgument(std::string& key, std::string& val, const std::string& argument)
+    {
+        std::string& scope = key;
+        for(char c : argument)
+        {
+            if(c == '=')
+            {
+                scope = val;
+            }
+
+            scope += c;
+        }
+
+        if(argument.empty() || key.empty() || val.empty())
         {
             return false;
         }
 
-        noway_assert(true, "This is not a bool type argument!!");
-        return false;
+        return true;
     }
 
-    std::string ArgumentVisitor::AsString()
+    bool Argument::Init(std::vector<std::string>& arguments)
     {
-        return *Value;
-    }
-
-    bool ArgumentVisitor::IsExists()
-    {
-        return Value != nullptr;
-    }
-
-    ArgumentVisitor::ArgumentVisitor(std::string* value) : Value(value)
-    {
-        
-    }
-
-    ArgumentTable argumentTable;
-    inline bool RemovePrefixIfArgument(std::string& token)
-    {
-        unsigned int prefixIndex = 0;
-        for(char c : token)
+        for (std::string& argument : arguments)
         {
-            if(c == '-')
+            auto& table = GetOptionTable();
+
+            std::string key = "";
+            std::string val = "";
+            if(!ExtractKVFromArgument(key, val, argument) || table.find(key) == table.end())
             {
-                prefixIndex++;
-            }
-            break;
-        }
-
-        token = std::string(&token[prefixIndex]);
-        return (!!prefixIndex);
-    }
-
-    void ArgumentParseCallback(std::vector<std::string>& arguments)
-    {
-        CONTRACT_CALL_TRACE;
-
-        // (-|--|)key_or_value([= ]value|)
-
-        for(std::string& argument : arguments)
-        {
-            if(!RemovePrefixIfArgument(argument))
-            {
-                argument.clear();
-                // TODO : Warning for wrong argument syntax.
-            }
-        }
-
-        for(std::string& argument : arguments)
-        {
-            if(argument.empty())
-            {
-                // We've removed argument that has wrong syntax.
-                // just skipping it.
+                // TODO : emit warning for unknown or empty argument.
                 continue;
             }
 
-            std::string Key = "";
-            std::string Val = "";
-
-            std::string& stringScope = Key;
-            for(char c : argument)
+            Argument* info = table[argument];
+            if(ArgumentB* arg = dynamic_cast<ArgumentB*>(info))
             {
-                if(c == '=')
-                {
-                    stringScope = Val;
-                }
-
-                stringScope += c;
+                arg->Set(val == "1" || val == "true");
             }
-            argumentTable.InitArgument(std::move(Key), std::move(Val));
+            else if(ArgumentI* arg = dynamic_cast<ArgumentI*>(info))
+            {
+                arg->Set(std::atoi(val.c_str()));
+            }
+            else if(ArgumentD* arg = dynamic_cast<ArgumentD*>(info))
+            {
+                arg->Set(std::atof(val.c_str()));
+            }
+            else if(ArgumentS* arg = dynamic_cast<ArgumentS*>(info))
+            {
+                arg->Set(val);   
+            }
+
+            // unhandled argument type.
+            return false;
         }
+
+        return true;
     }
 
-    ArgumentTable& GetArgumentTable()
+    void Argument::Show()
     {
-        return argumentTable;
-    }
-
-    inline void ArgumentTable::InitArgument(const std::string && Key, const std::string && Val)
-    {
-        Table.insert(std::make_pair(std::move(Key), std::move(Val)));
+        for(auto [Key, Val] : *optionTable)
+        {
+            // TODO : Format key - value info table and print.
+        }
     }
 
 } // namespace HAJC

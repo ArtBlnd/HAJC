@@ -31,7 +31,7 @@ namespace HAJC
         }
     }
 
-    inline void InitBlockPool(IMemPool* (&pool))
+    inline void InitBlockPool(IMemPool*& pool)
     {
         pool = new MemPoolReusable<Block>();
     }

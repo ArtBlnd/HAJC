@@ -9,4 +9,5 @@ add_library(tools
     Host.h
     Memory.h
     Utils.h
+	FileContext.h
 )

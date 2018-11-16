@@ -7,43 +7,54 @@
 
 namespace HAJC
 {
-
-    class ArgumentVisitor
+    class Argument
     {
-        friend struct ArgumentTable;
-        std::string* Value;
-
-    public:
-        int         AsInt();    // Get argument value as int.
-        double      AsDouble(); // Get argument value as double.
-        bool        AsBool();   // Get argument value as bool.
-        std::string AsString(); // Get argument value as string.
-
-        bool IsExists();
+        char* aiKey;
+        char* aiVal;
+        char* aiDescription;
 
     protected:
-        explicit ArgumentVisitor(std::string* value);
+        explicit Argument(char* Key, char* Desc);
+        virtual ~Argument() = default;
+
+    public:
+        static bool Init(std::vector<std::string>& arguments);
+        static void Show();
     };
 
-    struct ArgumentTable
+    template <class Ty>
+    class ArgumentInfo : public Argument
     {
-        std::unordered_map<std::string, std::string> Table;
+        Ty value;
 
-        void InitArgument(const std::string&& Key, const std::string&& Val);
+    public:
+        explicit ArgumentInfo(char* Key, char* Desc) : Argument(Key, Desc), value(Ty()) { }
+        virtual ~ArgumentInfo() = default;
 
-        ArgumentVisitor operator[](std::string key)
+        Ty Set(Ty newVal)
         {
-            if(Table.find(key) == Table.end())
-            {
-                return ArgumentVisitor(nullptr);
-            }
+            std::swap(value, newVal);
+            return newVal;
+        }
 
-            return ArgumentVisitor(&Table[key]);
+        Ty Get()
+        {
+            return value;
         }
     };
 
-    void ArgumentParseCallback(std::vector<std::string>& arguments);
-    ArgumentTable& GetArgumentTable();
+    typedef ArgumentInfo<bool>        ArgumentB;
+    typedef ArgumentInfo<int>         ArgumentI;
+    typedef ArgumentInfo<double>      ArgumentD;
+    typedef ArgumentInfo<std::string> ArgumentS;
+
+    
+
 } // namespace HAJC
+
+#define DEFINE_ARGUMENT_S(name, key, desc) HAJC::ArgumentS name(#key, desc)
+#define DEFINE_ARGUMENT_I(name, key, desc) HAJC::ArgumentI name(#key, desc)
+#define DEFINE_ARGUMENT_F(name, key, desc) HAJC::ArgumentD name(#key, desc)
+#define DEFINE_ARGUMENT_S(name, key, desc) HAJC::ArgumentS name(#key, desc)
 
 #endif
