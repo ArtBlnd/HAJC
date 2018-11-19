@@ -88,22 +88,14 @@ namespace HAJC
         return length;
     }
 
-    void InsertSpace(unsigned int spaces)
-    {
-        for(unsigned int i = 0; i < spaces; ++i)
-        {
-            std::cout << ' ';
-        }
-    }
-
     void Argument::Show()
     {
         const unsigned int maxKeyLength = GetLongestKeyLength();
+        std::string spaceStr(maxKeyLength, ' ');
 
         for(auto [Key, Val] : *argumentTable)
         {
-            printf(" --%s", Key.c_str());
-            InsertSpace(maxKeyLength - Key.length());
+            printf(" --%s%s", Key.c_str(), &spaceStr[Key.length()]);
             printf(" : %s\n", Val->aiDescription);
         }
     }
