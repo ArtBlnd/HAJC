@@ -33,13 +33,22 @@ namespace HAJC
 
         Ty Set(Ty newVal)
         {
-            std::swap(value, newVal);
-            return newVal;
+            return std::exchange(value, newVal);
         }
 
         Ty Get()
         {
             return value;
+        }
+
+        operator Ty()
+        {
+            return value;
+        }
+
+        Ty* operator->()
+        {
+            return &value;
         }
     };
 
@@ -47,14 +56,14 @@ namespace HAJC
     typedef ArgumentInfo<int>         ArgumentI;
     typedef ArgumentInfo<double>      ArgumentD;
     typedef ArgumentInfo<std::string> ArgumentS;
-
+    typedef std::unordered_map<std::string, Argument*> ArgumentTable;
     
 
 } // namespace HAJC
 
-#define DEFINE_ARGUMENT_S(name, key, desc) HAJC::ArgumentS name(#key, desc)
-#define DEFINE_ARGUMENT_I(name, key, desc) HAJC::ArgumentI name(#key, desc)
-#define DEFINE_ARGUMENT_F(name, key, desc) HAJC::ArgumentD name(#key, desc)
-#define DEFINE_ARGUMENT_S(name, key, desc) HAJC::ArgumentS name(#key, desc)
+#define DEFINE_ARGUMENT_B(name, key, desc) static HAJC::ArgumentB name(#key, desc)
+#define DEFINE_ARGUMENT_I(name, key, desc) static HAJC::ArgumentI name(#key, desc)
+#define DEFINE_ARGUMENT_F(name, key, desc) static HAJC::ArgumentD name(#key, desc)
+#define DEFINE_ARGUMENT_S(name, key, desc) static HAJC::ArgumentS name(#key, desc)
 
 #endif

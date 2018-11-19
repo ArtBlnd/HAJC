@@ -11,6 +11,21 @@
 
 using namespace HAJC;
 
+
+// Option table descriptions
+//      Those will be passed with program arguments by --key=value
+//      You can use it by using option variable.
+namespace OptionTable
+{
+    //===========================================================================================================================
+    //               | option variable | option key       | description                                                         |
+    DEFINE_ARGUMENT_S(LogFilename      , log-file         , "Set log filename as option");
+    DEFINE_ARGUMENT_B(EmitAstOnly      , emit-ast-only    , "Do not compile as a binary, only emit AST only.");
+    DEFINE_ARGUMENT_S(EmitAstFilename  , emit-ast-filename, "Target AST output filename. (this only work with --emit-ast-only)");
+    DEFINE_ARGUMENT_B(EmitTokenOnly    , emit-token-only  , "Do not compile as a binary, only emit tokens only.");
+}
+
+
 inline bool InitExec(unsigned int args, char** argv)
 {
     noway_assert(argv == nullptr, "program argument cannot be nullptr!");
@@ -20,14 +35,16 @@ inline bool InitExec(unsigned int args, char** argv)
         // We have to pass one program argument at least for output file.
 
         std::vector<std::string> arguments;
-        for(unsigned int i = 2; i < args; ++i)
+        for(unsigned int i = 1; i < args; ++i)
         {
             arguments.push_back(std::string(argv[i]));
         }
 
-        if(args <= 1 && !Argument::Init(arguments))
+        if(args <= 1 || !Argument::Init(arguments))
         {
+            printf("Arguments :\n");
             Argument::Show();
+            printf("\n\n");
             return false;
         }
     }
@@ -35,24 +52,8 @@ inline bool InitExec(unsigned int args, char** argv)
     return true;
 }
 
-
-// Option table descriptions
-//      Those will be passed with program arguments by --key=value
-//      You can use it by using option variable.
-namespace Options
-{
-    //==============================================================================
-    //               | option variable | option key | description                  |
-    DEFINE_ARGUMENT_S(logFile          , log-file   , "Set log filename as option");
-    DEFINE_ARGUMENT_S(outFile          , out-file   , "Set out filename as option");
-}
-
-
 bool MainExec(const std::string& filename)
 {
-    
-
-
     ParseContext context;
     if(!psCreateContext(&context, filename))
     {
@@ -71,10 +72,20 @@ int main(int args, char** argv, char** env)
     
     if(!InitExec(args, argv))
     {
-        dbgLogOutput("no source file targeted!\n");
+        dbgLogOutput("no source file targeted or wrong argument found! \n");
         dbgLogOutput("usage : %s filename arguments...\n", argv[0]);
         return -1;
     }
 
-    return MainExec(argv[1]);
-}
+    std::fstream logFile;
+    if(!OptionTable::LogFilename->empty())
+    {
+        logFile = std::fstream(OptionTable::LogFilename);
+        if(logFile.is_open())
+        {
+            dbgSetOutput(logFile);
+        }
+    }
+
+    return MainExec(argv[1]) ? 0 : -1;
+} 

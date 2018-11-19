@@ -1,28 +1,18 @@
 #include <tools/Argument.h>
 #include <tools/Debug.h>
-
-#include <map>
+#include <tools/Singleton.h>
 
 namespace HAJC
 {
-    std::map <std::string, Argument*>* optionTable = nullptr;
-    std::map <std::string, Argument*>& GetOptionTable()
-    {
-        if(optionTable == nullptr)
-        {
-            optionTable = new std::map <std::string, Argument*>();
-        }
-
-        return *optionTable;
-    }
+    Singleton<ArgumentTable> argumentTable;
 
     Argument::Argument(char* Key, char* Desc)
         : aiKey(Key), aiDescription(Desc)
     {
-        GetOptionTable().insert(std::make_pair(Key, this));
+        argumentTable->insert(std::make_pair(Key, this));
     }
 
-    bool ExtractKVFromArgument(std::string& key, std::string& val, const std::string& argument)
+    void ExtractKVFromArgument(std::string& key, std::string& val, const std::string& argument)
     {
         std::string& scope = key;
         for(char c : argument)
@@ -34,24 +24,19 @@ namespace HAJC
 
             scope += c;
         }
-
-        if(argument.empty() || key.empty() || val.empty())
-        {
-            return false;
-        }
-
-        return true;
     }
 
     bool Argument::Init(std::vector<std::string>& arguments)
     {
         for (std::string& argument : arguments)
         {
-            auto& table = GetOptionTable();
+            auto& table = *argumentTable;
 
             std::string key = "";
             std::string val = "";
-            if(!ExtractKVFromArgument(key, val, argument) || table.find(key) == table.end())
+            ExtractKVFromArgument(key, val, argument);
+
+            if(table.find(key) == table.end())
             {
                 // TODO : emit warning for unknown or empty argument.
                 continue;
@@ -60,7 +45,14 @@ namespace HAJC
             Argument* info = table[argument];
             if(ArgumentB* arg = dynamic_cast<ArgumentB*>(info))
             {
-                arg->Set(val == "1" || val == "true");
+                if(val.empty())
+                {
+                    arg->Set(true);
+                }
+                else
+                {
+                    arg->Set(val == "1" || val == "true");
+                }
             }
             else if(ArgumentI* arg = dynamic_cast<ArgumentI*>(info))
             {
@@ -82,11 +74,37 @@ namespace HAJC
         return true;
     }
 
+    unsigned int GetLongestKeyLength()
+    {
+        unsigned int length = 0;
+        for(auto [Key, Val] : *argumentTable)
+        {
+            if(length < Key.length())
+            {
+                length = Key.length();
+            }
+        }
+
+        return length;
+    }
+
+    void InsertSpace(unsigned int spaces)
+    {
+        for(unsigned int i = 0; i < spaces; ++i)
+        {
+            std::cout << ' ';
+        }
+    }
+
     void Argument::Show()
     {
-        for(auto [Key, Val] : *optionTable)
+        const unsigned int maxKeyLength = GetLongestKeyLength();
+
+        for(auto [Key, Val] : *argumentTable)
         {
-            // TODO : Format key - value info table and print.
+            printf(" --%s", Key.c_str());
+            InsertSpace(maxKeyLength - Key.length());
+            printf(" : %s\n", Val->aiDescription);
         }
     }
 

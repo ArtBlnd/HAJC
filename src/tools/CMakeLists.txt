@@ -10,4 +10,5 @@ add_library(tools
     Memory.h
     Utils.h
 	FileContext.h
+	Singleton.h
 )
