@@ -17,15 +17,15 @@
 
 namespace HAJC
 {
-    void dbgSetOutput(std::ostream& stream);
-    void dbgLogOutput(const char* message);
+    void SetLogOutput(std::ostream& stream);
+    void logf(const char* message);
 
     template <class... ArgsTy>
-    void dbgLogOutput(const char* message, ArgsTy... args)
+    void logf(const char* message, ArgsTy... args)
     {
         char messageBuffer[512] = {0, };
         snprintf(messageBuffer, 512, message, args...);
-        dbgLogOutput(messageBuffer);
+        logf(messageBuffer);
     }
 
     struct TraceContext

@@ -9,12 +9,12 @@ namespace HAJC
     std::ostream*              dbgOutput     = &std::cout;
     std::vector<TraceContext*> dbgTraceTable;
 
-    void dbgSetOutput(std::ostream& stream)
+    void SetLogOutput(std::ostream& stream)
     {
         dbgOutput = &stream;
     }
 
-    void dbgLogOutput(const char* message)
+    void logf(const char* message)
     {
         std::ostream& outstream = *dbgOutput;
         outstream << message;
@@ -36,17 +36,17 @@ namespace HAJC
 
     void DumpTrace()
     {
-        dbgLogOutput("======TRACE DUMP====== (Most recent call last)\n");
+        logf("======TRACE DUMP====== (Most recent call last)\n");
         for(TraceContext* context : dbgTraceTable)
         {
             printf("%s : %s\n", context->file.c_str(), context->func.c_str());
         }
-        dbgLogOutput("======================\n");
+        logf("======================\n");
     }
 
     void AssertMessage(const std::string message)
     {
-        dbgLogOutput("Assertion Error : %s\n\n", message);
+        logf("Assertion Error : %s\n\n", message);
         DumpTrace();
 
         exit(EXIT_FAILURE);

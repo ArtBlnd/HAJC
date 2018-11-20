@@ -61,6 +61,18 @@ bool MainExec(const std::string& filename)
     }
 
     psTokenlizeContext(&context);
+    if(OptionTable::EmitTokenOnly == true)
+    {
+        for(TokenContext* token : context.sourceTokens)
+        {
+            logf("%s\n", token->tcToken);
+        }
+    }
+    else
+    {
+        // TODO : compile tokens
+    }
+
     psDeleteContext(&context);
 
     return true;
@@ -72,8 +84,8 @@ int main(int args, char** argv, char** env)
     
     if(!InitExec(args, argv))
     {
-        dbgLogOutput("no source file targeted or wrong argument found! \n");
-        dbgLogOutput("usage : %s filename arguments...\n", argv[0]);
+        logf("no source file targeted or wrong argument found! \n");
+        logf("usage : %s filename arguments...\n", argv[0]);
         return -1;
     }
 
@@ -83,7 +95,7 @@ int main(int args, char** argv, char** env)
         logFile = std::fstream(OptionTable::LogFilename);
         if(logFile.is_open())
         {
-            dbgSetOutput(logFile);
+            SetLogOutput(logFile);
         }
     }
 
